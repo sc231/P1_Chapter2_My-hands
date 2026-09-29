@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我有一雙手 - 語文學習活動</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+    background: linear-gradient(135deg, #fef9e7 0%, #e8f8f5 100%);
+    color: #333; padding: 20px; line-height: 1.6;
+  }
+  header { text-align: center; margin-bottom: 25px; }
+  header h1 { font-size: 1.9rem; color: #e67e22; text-shadow: 2px 2px 0 #fff; }
+  header p { color: #7f8c8d; font-size: 1rem; margin-top: 6px; }
+
+  .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+  .tab-btn {
+    background: #fff; border: 3px solid #f39c12; color: #e67e22;
+    padding: 10px 24px; border-radius: 30px; font-size: 1.1rem;
+    font-weight: bold; cursor: pointer; transition: all 0.3s;
+  }
+  .tab-btn:hover { background: #fef5e7; transform: translateY(-2px); }
+  .tab-btn.active { background: #f39c12; color: #fff; }
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.4s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px);} to {opacity:1; transform: translateY(0);} }
+
+  h2 { text-align: center; color: #16a085; margin-bottom: 8px; font-size: 1.5rem; }
+  h2::before, h2::after { content: " ✿ "; color: #f39c12; }
+  .subtitle { text-align: center; color: #888; font-size: 0.95rem; margin-bottom: 25px; }
+
+  /* ---------- 詞語卡 ---------- */
+  .word-group { background: #fff; border-radius: 20px; padding: 20px; margin-bottom: 25px; box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+  .word-group h3 { color: #2980b9; font-size: 1.2rem; margin-bottom: 15px; border-left: 6px solid #3498db; padding-left: 10px; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+
+  .word-card {
+    background: linear-gradient(145deg, #fffdf5, #fef5e7);
+    border: 3px solid #f39c12; border-radius: 16px;
+    padding: 16px 14px; text-align: center;
+    transition: all 0.25s; position: relative;
+  }
+  .word-card:hover { transform: scale(1.03); border-color: #e67e22; box-shadow: 0 8px 20px rgba(243,156,18,0.3); }
+
+  .word-card .emoji { font-size: 2.6rem; display: block; margin-bottom: 4px; }
+  .word-card .hanzi { font-size: 2.4rem; font-weight: bold; color: #c0392b; display: block; line-height: 1.2; }
+  .word-card .jyutping { font-size: 1rem; color: #7f8c8d; font-style: italic; margin-bottom: 6px; display: block; }
+  .word-card .english { font-size: 0.95rem; color: #2980b9; font-weight: bold; margin-bottom: 8px; display: block; }
+  .word-card .example {
+    font-size: 0.88rem; color: #555; background: #fff8e1;
+    border-radius: 8px; padding: 6px 8px; margin-top: 6px;
+    border-left: 3px solid #f39c12; text-align: left;
+  }
+  .word-card .example::before { content: "例："; color: #e67e22; font-weight: bold; }
+
+  /* ---------- 通用練習卡 ---------- */
+  .exercise-card {
+    background: #fff; border-radius: 20px; padding: 24px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08); margin-bottom: 22px;
+  }
+  .exercise-title {
+    font-size: 1.15rem; color: #2980b9; font-weight: bold;
+    margin-bottom: 6px; border-left: 6px solid #3498db; padding-left: 10px;
+  }
+  .exercise-instruction { font-size: 0.9rem; color: #888; margin-bottom: 18px; padding-left: 16px; }
+
+  /* ---------- 選擇題 ---------- */
+  .question {
+    background: #fef9e7; border-radius: 14px; padding: 18px;
+    margin-bottom: 16px; border: 2px solid #fdebd0;
+  }
+  .question-text {
+    font-size: 1.25rem; color: #333; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .question-emoji { font-size: 2rem; letter-spacing: 4px; }
+  .blank {
+    display: inline-block; min-width: 60px; border-bottom: 3px dashed #e67e22;
+    text-align: center; color: #e67e22; font-weight: bold;
+  }
+  .options { display: flex; gap: 12px; flex-wrap: wrap; }
+  .option-btn {
+    background: #fff; border: 3px solid #3498db; color: #2980b9;
+    padding: 10px 24px; border-radius: 30px; font-size: 1.1rem;
+    font-weight: bold; cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .option-btn:hover { background: #eaf4fc; transform: translateY(-2px); }
+  .option-btn.correct { background: #27ae60; border-color: #27ae60; color: #fff; animation: pop 0.4s; }
+  .option-btn.wrong { background: #e74c3c; border-color: #e74c3c; color: #fff; animation: shake 0.4s; }
+  .option-btn:disabled { cursor: default; opacity: 0.85; }
+  @keyframes pop { 0%{transform:scale(1);} 50%{transform:scale(1.15);} 100%{transform:scale(1);} }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+
+  .feedback { margin-top: 10px; font-size: 0.95rem; font-weight: bold; padding-left: 4px; min-height: 22px; }
+  .feedback.ok { color: #27ae60; }
+  .feedback.no { color: #e74c3c; }
+
+  /* ---------- 配對題 ---------- */
+  .match-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 560px) { .match-wrap { grid-template-columns: 1fr; } }
+  .match-col h4 { font-size: 1rem; color: #7f8c8d; margin-bottom: 10px; text-align: center; }
+  .match-item {
+    background: #fff; border: 3px solid #bdc3c7; border-radius: 14px;
+    padding: 12px; margin-bottom: 10px; cursor: pointer;
+    text-align: center; font-size: 1.2rem; font-weight: bold;
+    transition: all 0.2s; user-select: none;
+  }
+  .match-item:hover { border-color: #3498db; transform: translateY(-2px); }
+  .match-item.selected { border-color: #e67e22; background: #fef5e7; transform: scale(1.04); }
+  .match-item.matched { border-color: #27ae60; background: #eafaf1; color: #27ae60; cursor: default; opacity: 0.75; }
+  .match-item .small-label { display: block; font-size: 0.8rem; color: #999; font-weight: normal; }
+
+  /* ---------- 拖曳分類 ---------- */
+  .drag-area { display: flex; flex-direction: column; gap: 16px; }
+  .drag-pool {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    background: #fef9e7; border: 2px dashed #f39c12; border-radius: 14px;
+    padding: 14px; min-height: 70px;
+  }
+  .drag-item {
+    background: #fff; border: 3px solid #f39c12; border-radius: 12px;
+    padding: 8px 18px; font-size: 1.5rem; font-weight: bold; color: #c0392b;
+    cursor: grab; transition: all 0.2s; user-select: none;
+  }
+  .drag-item:hover { transform: scale(1.08); box-shadow: 0 4px 10px rgba(243,156,18,0.3); }
+  .drag-item.selected { border-color: #e67e22; background: #fef5e7; transform: scale(1.08); }
+  .drag-item.dragging { opacity: 0.4; }
+  .drag-item.placed { cursor: default; }
+  .drag-item.wrong { animation: shake 0.4s; border-color: #e74c3c; }
+  .drop-zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 14px; }
+  .drop-zone {
+    background: #eaf4fc; border: 3px dashed #3498db; border-radius: 14px;
+    padding: 12px; text-align: center; min-height: 120px; transition: all 0.2s;
+  }
+  .drop-zone.over { background: #d6eaf8; transform: scale(1.03); }
+  .drop-zone .zone-title { font-size: 1.6rem; font-weight: bold; color: #c0392b; margin-bottom: 4px; }
+  .drop-zone .zone-sub { font-size: 0.8rem; color: #888; margin-bottom: 8px; }
+  .drop-zone .zone-items { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .drop-zone .zone-items .drag-item { font-size: 1.1rem; padding: 6px 12px; }
+
+  /* ---------- 計分板 ---------- */
+  .score-board { position: sticky; top: 10px; z-index: 50; text-align: center; margin-bottom: 18px; }
+  .score-pill {
+    display: inline-block; background: linear-gradient(145deg, #f39c12, #e67e22);
+    color: #fff; padding: 8px 24px; border-radius: 30px;
+    font-size: 1rem; font-weight: bold; box-shadow: 0 4px 12px rgba(230,126,34,0.35);
+  }
+  .reset-btn {
+    background: #fff; border: 2px solid #e67e22; color: #e67e22;
+    padding: 8px 18px; border-radius: 30px; font-size: 0.9rem;
+    font-weight: bold; cursor: pointer; margin-left: 10px; transition: all 0.2s;
+  }
+  .reset-btn:hover { background: #fef5e7; }
+
+  /* ---------- 發音鍵 ---------- */
+  .speak-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    background: linear-gradient(145deg, #3498db, #2980b9);
+    color: #fff; border: none; border-radius: 30px;
+    padding: 8px 18px; font-size: 0.95rem; font-weight: bold;
+    cursor: pointer; margin-top: 10px;
+    transition: all 0.2s; box-shadow: 0 4px 10px rgba(41,128,185,0.3);
+  }
+  .speak-btn:hover { background: linear-gradient(145deg, #2980b9, #1f618d); transform: translateY(-2px); box-shadow: 0 6px 14px rgba(41,128,185,0.45); }
+  .speak-btn:active { transform: scale(0.95); }
+  .speak-btn.speaking { background: linear-gradient(145deg, #e67e22, #d35400); animation: pulse 0.8s infinite; }
+
+  .speak-btn-small {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #3498db; color: #fff; border: none; border-radius: 50%;
+    width: 34px; height: 34px; font-size: 0.95rem;
+    cursor: pointer; transition: all 0.2s; vertical-align: middle;
+    box-shadow: 0 3px 8px rgba(41,128,185,0.3);
+  }
+  .speak-btn-small:hover { background: #2980b9; transform: scale(1.1); }
+  .speak-btn-small:active { transform: scale(0.9); }
+  .speak-btn-small.speaking { background: #e67e22; animation: pulse 0.8s infinite; }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(230,126,34,0.6); }
+    50% { box-shadow: 0 0 0 8px rgba(230,126,34,0); }
+  }
+
+  .all-done {
+    text-align: center; padding: 30px; background: #eafaf1;
+    border-radius: 20px; border: 3px dashed #27ae60;
+    font-size: 1.3rem; color: #27ae60; font-weight: bold;
+    margin-top: 10px; display: none;
+  }
+  .all-done.show { display: block; animation: pop 0.5s; }
+
+  footer { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🖐️ 我有一雙手</h1>
+  <p>一年級非華語小學生 · 語文學習活動</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('words', event)">📇 詞語卡</button>
+  <button class="tab-btn" onclick="showTab('measure', event)">🔢 量詞練習</button>
+  <button class="tab-btn" onclick="showTab('radical', event)">🀄 部首練習</button>
+</div>
+
+<!-- ==================== 詞語卡 ==================== -->
+<div id="words" class="section active">
+  <h2>詞語卡</h2>
+  <p class="subtitle">點擊 🔊 聆聽發音</p>
+
+  <div class="word-group">
+    <h3>📖 課文詞語</h3>
+    <div class="card-grid" id="textWords"></div>
+  </div>
+
+  <div class="word-group">
+    <h3>🔤 認讀詞語</h3>
+    <div class="card-grid" id="readWords"></div>
+  </div>
+</div>
+
+<!-- ==================== 量詞練習 ==================== -->
+<div id="measure" class="section">
+  <h2>量詞練習</h2>
+  <p class="subtitle">一個 · 一隻 · 一雙</p>
+
+  <div class="score-board">
+    <span class="score-pill">⭐ 得分：<span id="measureScore">0</span> / <span id="measureTotal">0</span></span>
+    <button class="reset-btn" onclick="resetMeasure()">🔄 重新開始</button>
+  </div>
+
+  <div class="exercise-card">
+    <div class="exercise-title">練習一：選一選（12 題）</div>
+    <div class="exercise-instruction">看看圖示，選出正確的量詞。</div>
+    <div id="measureQuiz"></div>
+  </div>
+
+  <div class="exercise-card">
+    <div class="exercise-title">練習二：連一連（6 組）</div>
+    <div class="exercise-instruction">先點左邊的量詞，再點右邊的詞語，配成正確的組合。</div>
+    <div class="match-wrap">
+      <div class="match-col">
+        <h4>量詞</h4>
+        <div id="matchLeft"></div>
+      </div>
+      <div class="match-col">
+        <h4>詞語</h4>
+        <div id="matchRight"></div>
+      </div>
+    </div>
+    <div class="feedback" id="matchFeedback"></div>
+  </div>
+
+  <div class="all-done" id="measureDone">🎉 太棒了！你已完成量詞練習！</div>
+</div>
+
+<!-- ==================== 部首練習 ==================== -->
+<div id="radical" class="section">
+  <h2>部首練習</h2>
+  <p class="subtitle">口 · 手 · 目 · 足</p>
+
+  <div class="score-board">
+    <span class="score-pill">⭐ 得分：<span id="radicalScore">0</span> / <span id="radicalTotal">0</span></span>
+    <button class="reset-btn" onclick="resetRadical()">🔄 重新開始</button>
+  </div>
+
+  <div class="exercise-card">
+    <div class="exercise-title">練習一：找一找部首（8 題）</div>
+    <div class="exercise-instruction">下面哪個字是這個部首？選出正確答案。</div>
+    <div id="radicalQuiz"></div>
+  </div>
+
+  <div class="exercise-card">
+    <div class="exercise-title">練習二：分一分（16 字）</div>
+    <div class="exercise-instruction">把下面的字拖到正確的部首框裏。（也可點擊字，再點框）</div>
+    <div class="drag-area">
+      <div class="drag-pool" id="dragPool"></div>
+      <div class="drop-zones" id="dropZones"></div>
+    </div>
+    <div class="feedback" id="dragFeedback"></div>
+  </div>
+
+  <div class="all-done" id="radicalDone">🎉 太棒了！你已完成部首練習！</div>
+</div>
+
+<footer>粵拼根據香港語言學學會粵語拼音方案 · 發音由瀏覽器語音合成提供</footer>
+
+<script>
+/* ============================================================
+   語音合成
+   ============================================================ */
+const synth = window.speechSynthesis;
+const ttsSupported = !!synth;
+let currentBtn = null;
+
+function pickVoice() {
+  if (!ttsSupported) return null;
+  const voices = synth.getVoices();
+  const preferred = ["zh-HK", "yue-Hant-HK", "zh-CN", "zh-TW", "zh"];
+  for (const lang of preferred) {
+    const v = voices.find(v => v.lang === lang || v.lang.startsWith(lang));
+    if (v) return v;
+  }
+  return null;
+}
+
+function speak(text, btn) {
+  if (!ttsSupported) { alert("您的瀏覽器不支援語音功能，建議使用 Chrome 或 Edge。"); return; }
+  if (synth.speaking) {
+    synth.cancel();
+    if (currentBtn) currentBtn.classList.remove("speaking");
+  }
+  const u = new SpeechSynthesisUtterance(text);
+  const voice = pickVoice();
+  if (voice) { u.voice = voice; u.lang = voice.lang; } else { u.lang = "zh-HK"; }
+  u.rate = 0.85; u.pitch = 1.1;
+  u.onstart = () => { if (btn) { btn.classList.add("speaking"); currentBtn = btn; } };
+  u.onend = () => { if (btn) btn.classList.remove("speaking"); currentBtn = null; };
+  u.onerror = () => { if (btn) btn.classList.remove("speaking"); currentBtn = null; };
+  synth.speak(u);
+}
+if (ttsSupported) { synth.onvoiceschanged = () => pickVoice(); setTimeout(() => pickVoice(), 100); }
+
+/* ============================================================
+   分頁切換
+   ============================================================ */
+function showTab(tabId, evt) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  if (evt && evt.target) evt.target.classList.add('active');
+  if (synth && synth.speaking) synth.cancel();
+}
+
+/* ============================================================
+   詞語卡資料
+   ============================================================ */
+const textWordData = [
+  { hanzi: "手", emoji: "🖐️", jyutping: "sau2", english: "hand", example: "我的手會畫畫。" },
+  { hanzi: "左", emoji: "👈", jyutping: "zo2", english: "left", example: "左手在哪裏？" },
+  { hanzi: "右", emoji: "👉", jyutping: "jau6", english: "right", example: "右手在這裏。" },
+  { hanzi: "畫", emoji: "🎨", jyutping: "waak6", english: "to draw / paint", example: "我會畫小花朵。" },
+  { hanzi: "拍", emoji: "🏐", jyutping: "paak3", english: "to pat / bounce", example: "我會拍小皮球。" },
+  { hanzi: "乖巧", emoji: "🐣", jyutping: "gwaai1 haau2", english: "well-behaved / clever", example: "我的小手乖巧又靈活。" },
+  { hanzi: "靈活", emoji: "🤸", jyutping: "ling4 wut6", english: "nimble / flexible", example: "手指很靈活。" }
+];
+
+const readWordData = [
+  { hanzi: "一雙", emoji: "👐", jyutping: "jat1 soeng1", english: "a pair", example: "我有一雙手。" },
+  { hanzi: "哪裏", emoji: "🤔", jyutping: "naa5 leoi5", english: "where", example: "小手在哪裏？" },
+  { hanzi: "這裏", emoji: "👇", jyutping: "ze5 leoi5", english: "here", example: "小手在這裏。" },
+  { hanzi: "花朵", emoji: "🌸", jyutping: "faa1 do2", english: "flower", example: "我會畫小花朵。" },
+  { hanzi: "皮球", emoji: "⚽", jyutping: "pei4 kau4", english: "ball", example: "我會拍小皮球。" },
+  { hanzi: "口", emoji: "👄", jyutping: "hau2", english: "mouth", example: "口可以吃東西。" },
+  { hanzi: "目", emoji: "👁️", jyutping: "muk6", english: "eye", example: "目可以看東西。" },
+  { hanzi: "耳", emoji: "👂", jyutping: "ji5", english: "ear", example: "耳可以聽聲音。" },
+  { hanzi: "足", emoji: "🦶", jyutping: "zuk1", english: "foot", example: "足可以走路。" },
+  { hanzi: "人", emoji: "🧑", jyutping: "jan4", english: "person", example: "我是一個小學生。" }
+];
+
+function renderWordCards(containerId, data) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = data.map(w => `
+    <div class="word-card">
+      <span class="emoji">${w.emoji}</span>
+      <span class="hanzi">${w.hanzi}</span>
+      <span class="jyutping">粵拼：${w.jyutping}</span>
+      <span class="english">${w.english}</span>
+      <button class="speak-btn" onclick="speak('${w.hanzi}', this)">🔊 聽發音</button>
+      <div class="example">${w.example}</div>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   量詞練習資料（12 題）
+   ============================================================ */
+const measureQuizData = [
+  { emoji: "👄", word: "嘴巴", correct: "一個", options: ["一個", "一隻", "一雙"], hint: "嘴巴只有一個" },
+  { emoji: "🖐️", word: "手", correct: "一隻", options: ["一個", "一隻", "一雙"], hint: "一隻手（單手）" },
+  { emoji: "👀", word: "眼睛", correct: "一雙", options: ["一個", "一隻", "一雙"], hint: "兩隻眼睛 = 一雙" },
+  { emoji: "🦶", word: "腳", correct: "一隻", options: ["一個", "一隻", "一雙"], hint: "一隻腳（單腳）" },
+  { emoji: "🧑", word: "人", correct: "一個", options: ["一個", "一隻", "一雙"], hint: "一個人" },
+  { emoji: "👂👂", word: "耳朵", correct: "一雙", options: ["一個", "一隻", "一雙"], hint: "兩隻耳朵 = 一雙" },
+  { emoji: "👃", word: "鼻子", correct: "一個", options: ["一個", "一隻", "一雙"], hint: "鼻子只有一個" },
+  { emoji: "🖐️🖐️", word: "手（兩隻）", correct: "一雙", options: ["一個", "一隻", "一雙"], hint: "兩隻手 = 一雙" },
+  { emoji: "🦶🦶", word: "腳（兩隻）", correct: "一雙", options: ["一個", "一隻", "一雙"], hint: "兩隻腳 = 一雙" },
+  { emoji: "🐶", word: "小狗", correct: "一隻", options: ["一個", "一隻", "一雙"], hint: "動物用「一隻」" },
+  { emoji: "🍎", word: "蘋果", correct: "一個", options: ["一個", "一隻", "一雙"], hint: "水果用「一個」" },
+  { emoji: "👟👟", word: "鞋子", correct: "一雙", options: ["一個", "一隻", "一雙"], hint: "兩隻鞋子 = 一雙" }
+];
+
+const matchData = [
+  { mw: "一個", mwJp: "jat1 go3", word: "人", wordEmoji: "🧑" },
+  { mw: "一隻", mwJp: "jat1 zek3", word: "手", wordEmoji: "🖐️" },
+  { mw: "一雙", mwJp: "jat1 soeng1", word: "眼睛", wordEmoji: "👀" },
+  { mw: "一個", mwJp: "jat1 go3", word: "蘋果", wordEmoji: "🍎" },
+  { mw: "一隻", mwJp: "jat1 zek3", word: "小狗", wordEmoji: "🐶" },
+  { mw: "一雙", mwJp: "jat1 soeng1", word: "鞋子", wordEmoji: "👟" }
+];
+
+/* ============================================================
+   量詞練習：選擇題
+   ============================================================ */
+let measureScoreVal = 0;
+let measureAnswered = 0;
+
+function renderMeasureQuiz() {
+  const box = document.getElementById('measureQuiz');
+  box.innerHTML = measureQuizData.map((q, i) => `
+    <div class="question" id="mq-${i}">
+      <div class="question-text">
+        <span class="question-emoji">${q.emoji}</span>
+        <span>一 <span class="blank" id="blank-${i}">?</span> ${q.word}</span>
+        <button class="speak-btn-small" onclick="speak('${q.correct}${q.word}', this)" title="聽發音">🔊</button>
+      </div>
+      <div class="options">
+        ${q.options.map(opt => `
+          <button class="option-btn" onclick="checkMeasure(${i}, '${opt}', this)">${opt}</button>
+        `).join('')}
+      </div>
+      <div class="feedback" id="fb-mq-${i}"></div>
+    </div>
+  `).join('');
+}
+
+function checkMeasure(idx, chosen, btn) {
+  const q = measureQuizData[idx];
+  const parent = document.getElementById(`mq-${idx}`);
+  const buttons = parent.querySelectorAll('.option-btn');
+  const fb = document.getElementById(`fb-mq-${idx}`);
+  const blank = document.getElementById(`blank-${idx}`);
+
+  buttons.forEach(b => b.disabled = true);
+
+  if (chosen === q.correct) {
+    btn.classList.add('correct');
+    fb.textContent = `✅ 答對了！${q.hint}`;
+    fb.className = "feedback ok";
+    blank.textContent = q.correct;
+    blank.style.color = "#27ae60";
+    measureScoreVal++;
+    speak(q.correct + q.word, null);
+  } else {
+    btn.classList.add('wrong');
+    buttons.forEach(b => { if (b.textContent === q.correct) b.classList.add('correct'); });
+    fb.textContent = `❌ 正確答案是「${q.correct}」。${q.hint}`;
+    fb.className = "feedback no";
+    blank.textContent = q.correct;
+    blank.style.color = "#e74c3c";
+  }
+  measureAnswered++;
+  updateMeasureScore();
+}
+
+function updateMeasureScore() {
+  document.getElementById('measureScore').textContent = measureScoreVal;
+  document.getElementById('measureTotal').textContent = measureQuizData.length + matchData.length;
+  if (measureAnswered === measureQuizData.length && matchedPairs.size === matchData.length) {
+    document.getElementById('measureDone').classList.add('show');
+  }
+}
+
+/* ============================================================
+   量詞練習：配對題
+   ============================================================ */
+let selectedLeft = null;
+const matchedPairs = new Set();
+
+function renderMatch() {
+  const left = document.getElementById('matchLeft');
+  const right = document.getElementById('matchRight');
+  left.innerHTML = matchData.map((m, i) => `
+    <div class="match-item" data-left="${i}" onclick="selectLeft(${i}, this)">
+      ${m.mw}
+      <span class="small-label">粵拼：${m.mwJp}</span>
+    </div>
+  `).join('');
+
+  const shuffled = [...matchData].map((m, i) => ({ ...m, origIdx: i }))
+    .sort(() => Math.random() - 0.5);
+  right.innerHTML = shuffled.map(m => `
+    <div class="match-item" data-right="${m.origIdx}" onclick="selectRight(${m.origIdx}, this)">
+      ${m.wordEmoji} ${m.word}
+    </div>
+  `).join('');
+}
+
+function selectLeft(idx, el) {
+  if (el.classList.contains('matched')) return;
+  document.querySelectorAll('[data-left]').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedLeft = idx;
+}
+
+function selectRight(idx, el) {
+  if (el.classList.contains('matched')) return;
+  if (selectedLeft === null) {
+    document.getElementById('matchFeedback').textContent = "👉 請先點左邊的量詞";
+    document.getElementById('matchFeedback').className = "feedback no";
+    return;
+  }
+
+  const leftEl = document.querySelector(`[data-left="${selectedLeft}"]`);
+  const fb = document.getElementById('matchFeedback');
+
+  const leftData = matchData[selectedLeft];
+  const rightData = matchData[idx];
+
+  if (leftData.mw === rightData.mw) {
+    leftEl.classList.remove('selected');
+    leftEl.classList.add('matched');
+    el.classList.add('matched');
+    matchedPairs.add(idx);
+    fb.textContent = `✅ 配對了！「${rightData.mw}${rightData.word}」`;
+    fb.className = "feedback ok";
+    measureScoreVal++;
+    updateMeasureScore();
+    speak(rightData.mw + rightData.word, null);
+  } else {
+    leftEl.classList.remove('selected');
+    fb.textContent = "❌ 不對喔，再試一次！";
+    fb.className = "feedback no";
+    el.classList.add('wrong');
+    setTimeout(() => el.classList.remove('wrong'), 500);
+  }
+  selectedLeft = null;
+}
+
+function resetMeasure() {
+  measureScoreVal = 0; measureAnswered = 0; selectedLeft = null;
+  matchedPairs.clear();
+  document.getElementById('measureDone').classList.remove('show');
+  renderMeasureQuiz();
+  renderMatch();
+  document.getElementById('matchFeedback').textContent = "";
+  updateMeasureScore();
+}
+
+/* ============================================================
+   部首練習資料（8 題）
+   ============================================================ */
+const radicalQuizData = [
+  { radical: "口", jyutping: "hau2", question: "下面哪個字跟「口」有關？", options: ["吃", "跑", "看", "拍"], correct: "吃" },
+  { radical: "手", jyutping: "sau2", question: "下面哪個字跟「手」有關？", options: ["跳", "打", "眼", "聽"], correct: "打" },
+  { radical: "目", jyutping: "muk6", question: "下面哪個字跟「目」有關？", options: ["唱", "走", "看", "拿"], correct: "看" },
+  { radical: "足", jyutping: "zuk1", question: "下面哪個字跟「足」有關？", options: ["跑", "說", "寫", "摸"], correct: "跑" },
+  { radical: "口", jyutping: "hau2", question: "下面哪個字跟「口」有關？", options: ["叫", "跳", "拿", "看"], correct: "叫" },
+  { radical: "手", jyutping: "sau2", question: "下面哪個字跟「手」有關？", options: ["眼", "拍", "跑", "唱"], correct: "拍" },
+  { radical: "目", jyutping: "muk6", question: "下面哪個字跟「目」有關？", options: ["眼", "打", "叫", "跳"], correct: "眼" },
+  { radical: "足", jyutping: "zuk1", question: "下面哪個字跟「足」有關？", options: ["跳", "吃", "拿", "說"], correct: "跳" }
+];
+
+const dragDataFinal = [
+  { char: "吃", jyutping: "hek3", radical: "口" },
+  { char: "叫", jyutping: "giu3", radical: "口" },
+  { char: "唱", jyutping: "coeng3", radical: "口" },
+  { char: "說", jyutping: "syut3", radical: "口" },
+  { char: "打", jyutping: "daa2", radical: "手" },
+  { char: "拍", jyutping: "paak3", radical: "手" },
+  { char: "拿", jyutping: "naa4", radical: "手" },
+  { char: "摸", jyutping: "mo2", radical: "手" },
+  { char: "看", jyutping: "hon3", radical: "目" },
+  { char: "眼", jyutping: "ngaan5", radical: "目" },
+  { char: "睛", jyutping: "zing1", radical: "目" },
+  { char: "睡", jyutping: "seoi6", radical: "目" },
+  { char: "跑", jyutping: "paau2", radical: "足" },
+  { char: "跳", jyutping: "tiu3", radical: "足" },
+  { char: "路", jyutping: "lou6", radical: "足" },
+  { char: "踢", jyutping: "tek3", radical: "足" }
+];
+
+/* ============================================================
+   部首練習：選擇題
+   ============================================================ */
+let radicalScoreVal = 0;
+let radicalAnswered = 0;
+let placedCount = 0;
+
+function renderRadicalQuiz() {
+  const box = document.getElementById('radicalQuiz');
+  box.innerHTML = radicalQuizData.map((q, i) => `
+    <div class="question" id="rq-${i}">
+      <div class="question-text">
+        <span style="font-size:2rem; color:#c0392b; font-weight:bold;">${q.radical}</span>
+        <span>（粵拼：${q.jyutping}）</span>
+        <button class="speak-btn-small" onclick="speak('${q.radical}', this)" title="聽發音">🔊</button>
+      </div>
+      <div style="font-size:1rem; color:#555; margin-bottom:12px;">${q.question}</div>
+      <div class="options">
+        ${q.options.map(opt => `
+          <button class="option-btn" onclick="checkRadical(${i}, '${opt}', this)">${opt}</button>
+        `).join('')}
+      </div>
+      <div class="feedback" id="fb-rq-${i}"></div>
+    </div>
+  `).join('');
+}
+
+function checkRadical(idx, chosen, btn) {
+  const q = radicalQuizData[idx];
+  const parent = document.getElementById(`rq-${idx}`);
+  const buttons = parent.querySelectorAll('.option-btn');
+  const fb = document.getElementById(`fb-rq-${idx}`);
+
+  buttons.forEach(b => b.disabled = true);
+
+  if (chosen === q.correct) {
+    btn.classList.add('correct');
+    fb.textContent = `✅ 答對了！「${q.correct}」和「${q.radical}」有關。`;
+    fb.className = "feedback ok";
+    radicalScoreVal++;
+    speak(q.correct, null);
+  } else {
+    btn.classList.add('wrong');
+    buttons.forEach(b => { if (b.textContent === q.correct) b.classList.add('correct'); });
+    fb.textContent = `❌ 正確答案是「${q.correct}」。`;
+    fb.className = "feedback no";
+  }
+  radicalAnswered++;
+  updateRadicalScore();
+}
+
+function updateRadicalScore() {
+  document.getElementById('radicalScore').textContent = radicalScoreVal;
+  document.getElementById('radicalTotal').textContent = radicalQuizData.length + dragDataFinal.length;
+  if (radicalAnswered === radicalQuizData.length && placedCount === dragDataFinal.length) {
+    document.getElementById('radicalDone').classList.add('show');
+  }
+}
+
+/* ============================================================
+   部首練習：拖曳分類
+   ============================================================ */
+let selectedDragItem = null;
+
+function renderDrag() {
+  const pool = document.getElementById('dragPool');
+  const zones = document.getElementById('dropZones');
+
+  const shuffled = [...dragDataFinal].sort(() => Math.random() - 0.5);
+  pool.innerHTML = shuffled.map((d) => `
+    <div class="drag-item" draggable="true" data-char="${d.char}" data-radical="${d.radical}"
+         data-jp="${d.jyutping}" onclick="selectDragItem(this)">
+      ${d.char}
+    </div>
+  `).join('');
+
+  const radicals = ["口", "手", "目", "足"];
+  const radicalInfo = {
+    "口": { jp: "hau2", en: "mouth", sub: "與嘴巴、說話有關" },
+    "手": { jp: "sau2", en: "hand", sub: "與手的動作有關" },
+    "目": { jp: "muk6", en: "eye", sub: "與眼睛、觀看有關" },
+    "足": { jp: "zuk1", en: "foot", sub: "與腳、行走有關" }
+  };
+  zones.innerHTML = radicals.map(r => `
+    <div class="drop-zone" data-zone="${r}"
+         ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="handleDrop(event, this)">
+      <div class="zone-title">${r}</div>
+      <div class="zone-sub">${radicalInfo[r].sub}</div>
+      <div class="zone-items"></div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.drag-item').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', item.dataset.char);
+      item.classList.add('dragging');
+    });
+    item.addEventListener('dragend', () => item.classList.remove('dragging'));
+  });
+}
+
+function allowDrop(ev) { ev.preventDefault(); ev.currentTarget.classList.add('over'); }
+function leaveDrop(ev) { ev.currentTarget.classList.remove('over'); }
+
+function handleDrop(ev, zoneEl) {
+  ev.preventDefault();
+  zoneEl.classList.remove('over');
+  const char = ev.dataTransfer.getData('text/plain');
+  const item = document.querySelector(`.drag-item[data-char="${char}"]`);
+  if (item) placeItem(item, zoneEl);
+}
+
+function selectDragItem(el) {
+  if (el.classList.contains('placed')) return;
+  document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDragItem = el;
+}
+
+document.addEventListener('click', function(e) {
+  const zone = e.target.closest('.drop-zone');
+  if (zone && selectedDragItem) {
+    placeItem(selectedDragItem, zone);
+    selectedDragItem = null;
+  }
+});
+
+function placeItem(item, zoneEl) {
+  const correctRadical = item.dataset.radical;
+  const chosenRadical = zoneEl.dataset.zone;
+  const fb = document.getElementById('dragFeedback');
+
+  if (correctRadical === chosenRadical) {
+    zoneEl.querySelector('.zone-items').appendChild(item);
+    item.classList.add('placed');
+    item.classList.remove('selected');
+    item.setAttribute('draggable', 'false');
+    item.onclick = null;
+    fb.textContent = `✅ 「${item.dataset.char}」是「${chosenRadical}」部首！`;
+    fb.className = "feedback ok";
+    radicalScoreVal++;
+    placedCount++;
+    speak(item.dataset.char, null);
+    updateRadicalScore();
+  } else {
+    item.classList.add('wrong');
+    fb.textContent = `❌ 「${item.dataset.char}」不屬於「${chosenRadical}」部首，再試試看！`;
+    fb.className = "feedback no";
+    setTimeout(() => item.classList.remove('wrong'), 500);
+  }
+}
+
+function resetRadical() {
+  radicalScoreVal = 0; radicalAnswered = 0; placedCount = 0;
+  selectedDragItem = null;
+  document.getElementById('radicalDone').classList.remove('show');
+  renderRadicalQuiz();
+  renderDrag();
+  document.getElementById('dragFeedback').textContent = "";
+  updateRadicalScore();
+}
+
+/* ============================================================
+   初始化
+   ============================================================ */
+renderWordCards('textWords', textWordData);
+renderWordCards('readWords', readWordData);
+
+renderMeasureQuiz();
+renderMatch();
+updateMeasureScore();
+
+renderRadicalQuiz();
+renderDrag();
+updateRadicalScore();
+</script>
+
+</body>
+</html>
